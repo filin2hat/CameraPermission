@@ -15,6 +15,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
 import com.example.camerapermission.databinding.ActivityMainBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -72,6 +73,14 @@ class MainActivity : AppCompatActivity() {
             executor,
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+
+                    Glide.with(this@MainActivity)
+                        .load(outputFileResults.savedUri)
+                        .circleCrop()
+                        //.placeholder(R.drawable.ic_launcher_background)
+                        //.error(R.drawable.ic_launcher_background)
+                        .into(binding.imagePreview)
+
                     Toast.makeText(
                         applicationContext,
                         "Photo saved to ${outputFileResults.savedUri}",
