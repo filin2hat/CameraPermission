@@ -2,6 +2,7 @@ package com.example.camerapermission
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -52,6 +53,15 @@ class MainActivity : AppCompatActivity() {
         binding.takePhotoButton.setOnClickListener { takePhoto() }
 
         checkPermissions()
+
+        // Load last saved image if available
+        val lastSavedImagePath = getLastSavedImagePath()
+        if (lastSavedImagePath != null) {
+            Glide.with(this)
+                .load(lastSavedImagePath)
+                .circleCrop()
+                .into(binding.imagePreview)
+        }
     }
 
     private fun takePhoto() {
@@ -74,11 +84,12 @@ class MainActivity : AppCompatActivity() {
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
 
+                    // Save the path to the last saved image
+                    saveLastSavedImagePath(outputFileResults.savedUri.toString())
+
                     Glide.with(this@MainActivity)
                         .load(outputFileResults.savedUri)
                         .circleCrop()
-                        //.placeholder(R.drawable.ic_launcher_background)
-                        //.error(R.drawable.ic_launcher_background)
                         .into(binding.imagePreview)
 
                     Toast.makeText(
@@ -133,6 +144,18 @@ class MainActivity : AppCompatActivity() {
         } else {
             launcher.launch(REQUEST_PERMISSIONS)
         }
+    }
+
+    private fun saveLastSavedImagePath(path: String) {
+        val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("lastSavedImagePath", path)
+        editor.apply()
+    }
+
+    private fun getLastSavedImagePath(): String? {
+        val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("lastSavedImagePath", null)
     }
 
     companion object {
